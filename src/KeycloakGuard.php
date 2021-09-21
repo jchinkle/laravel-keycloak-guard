@@ -207,7 +207,7 @@ class KeycloakGuard implements Guard
       $token_resource_values = (array)$token_resource_access[$resource];
 
       if (array_key_exists('groups', $token_resource_values) &&
-        in_array($role, $token_resource_values['groups'])) {
+        in_array($group, $token_resource_values['groups'])) {
         return true;
       }
     }
