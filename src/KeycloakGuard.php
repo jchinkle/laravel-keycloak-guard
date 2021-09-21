@@ -179,6 +179,11 @@ class KeycloakGuard implements Guard
   {
     return json_encode($this->decodedToken);
   }
+  
+  public function rawToken()
+  {
+    return $this->decodedToken; 
+  }
 
   /**
    * Check if authenticated user has a especific role into resource
