@@ -200,10 +200,10 @@ class KeycloakGuard implements Guard
     return false;
   }
   
-  public function hasGroup($resource, $group)
+  public function hasGroup($group)
   {
     $token_resource_access = (array)$this->decodedToken->resource_access;
-    if (array_key_exists($resource, $token_resource_access)) {
+    if (array_key_exists($this->config['allowed_resources'], $token_resource_access)) {
       $token_resource_values = (array)$token_resource_access[$resource];
 
       if (array_key_exists('groups', $token_resource_values) &&
