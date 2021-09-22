@@ -1,3 +1,4 @@
+
 <?php
 namespace KeycloakGuard;
 
@@ -12,6 +13,7 @@ use GuzzleHttp\Client;
 
 class KeycloakGuard implements Guard
 {
+  private static $realm_public_key;
   private $config;
   private $user;
   private $provider;
@@ -30,14 +32,20 @@ class KeycloakGuard implements Guard
 
   private function get_realm_public_key()
   {
-    if($this->config('realm_public_key') !== null) {
-      return $this->config('realm_public_key');
-    } else {
-      $client = new Client([ 'base_uri' => config('realm_public_key_url') ]);
-      $response = $client->request('GET', '/', []);
-      $keycloakData = unserialize($response->getBody()->getContents());
-      dd($keycloakData);
+    if(self::$realm_public_key !== null) {
+      return self::$realm_public_key;
     }
+
+    if($this->config['realm_public_key'] !== null) {
+      self::$realm_public_key = $this->config['realm_public_key'];
+    } else {
+      $url = $this->config['realm_public_key_url'];
+      $client = new Client();
+      $response = $client->request('GET', $url, []);
+      $keycloakData = json_decode($response->getBody()->getContents());
+      self::$realm_public_key = $keycloakData->public_key;
+    }
+    return self::$realm_public_key;
   }
 
   /**
@@ -49,7 +57,7 @@ class KeycloakGuard implements Guard
   private function authenticate()
   {
     try {
-      $this->decodedToken = Token::decode($this->request->bearerToken(), $this->config['realm_public_key']);
+      $this->decodedToken = Token::decode($this->request->bearerToken(), $this->get_realm_public_key());
     } catch (\Exception $e) {
       throw new TokenException($e->getMessage());
     }
