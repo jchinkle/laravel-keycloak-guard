@@ -6,3 +6,5 @@ vendor
 coverage
 .phpunit.result.cache
 docker-compose.yml
+*.swp
+*.swo

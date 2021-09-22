@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use KeycloakGuard\Exceptions\TokenException;
 use KeycloakGuard\Exceptions\UserNotFoundException;
 use KeycloakGuard\Exceptions\ResourceAccessNotAllowedException;
+use GuzzleHttp\Client;
 
 class KeycloakGuard implements Guard
 {
@@ -25,6 +26,18 @@ class KeycloakGuard implements Guard
     $this->request = $request;
 
     $this->authenticate();
+  }
+
+  private function get_realm_public_key()
+  {
+    if($this->config('realm_public_key') !== null) {
+      return $this->config('realm_public_key');
+    } else {
+      $client = new Client([ 'base_uri' => config('realm_public_key_url') ]);
+      $response = $client->request('GET', '/', []);
+      $keycloakData = unserialize($response->getBody()->getContents());
+      dd($keycloakData);
+    }
   }
 
   /**
@@ -129,7 +142,7 @@ class KeycloakGuard implements Guard
         $user = $this->provider->{$methodOnProvider}($this->decodedToken);
       } else {
         $user = $this->provider->retrieveByCredentials($credentials);
-      }      
+      }
 
       if (!$user) {
         throw new UserNotFoundException("User not found. Credentials: " . json_encode($credentials));
@@ -179,10 +192,10 @@ class KeycloakGuard implements Guard
   {
     return json_encode($this->decodedToken);
   }
-  
+
   public function rawToken()
   {
-    return $this->decodedToken; 
+    return $this->decodedToken;
   }
 
   /**
@@ -204,7 +217,7 @@ class KeycloakGuard implements Guard
     }
     return false;
   }
-  
+
   public function hasGroup($resource, $group)
   {
     $token_resource_access = (array)$this->decodedToken->resource_access;
