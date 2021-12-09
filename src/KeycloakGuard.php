@@ -227,7 +227,7 @@ class KeycloakGuard implements Guard
 
   public function hasGroup($group)
   {
-    $groups = (array)$this->decodedToken->groups || [];
+    $groups = (array)$this->decodedToken->groups ?? [];
     if(in_array($group, $groups)) {
         return true;
     }
